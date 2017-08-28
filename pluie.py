@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import requests,json
 
 ###################
@@ -58,7 +60,8 @@ def meteoVille(insee):
 #### Etat Domobox
 
 # On récupère l'état actuel de l'interrupteur (une fois pour toute plutot qu'a chaque appel de fonction)
-etat = etatSw(IDX_switch)
+switch = etatSw(IDX_switch)
+level = int(etatAl(IDX_alerte))
 
 ########
 # Process des données récupérées
@@ -76,33 +79,29 @@ for i in dataMF['dataCadran']:
   if (i['niveauPluie'] != 1) and (i['niveauPluie'] > alerte):
     alerte = i['niveauPluie']
 
-# print("Alerte finale : ",alerte,type(alerte))
+# print("Alerte finale : ",alerte)
 
 
 #########
 # Envoi des alertes
 #########
 
-# On met à jour le device Alerte avec le niveau exact d'alerte
-# On met également à jour le switch alerte pluie (qui enverra les notifications)
+## Mise à jour du switch
 
+if (alerte > 1) and (switch == "Off"):
+  requests.get(domobox+'type=command&param=switchlight&idx='+IDX_switch+'&switchcmd=On&level=1', verify=False)
+elif (alerte == 1) and (switch == "On"):
+  requests.get(domobox+'type=command&param=switchlight&idx='+IDX_switch+'&switchcmd=Off&level=0', verify=False)
 
+## Mise à jour de l'alerte avec le niveau exact d'alerte
 
-if (alerte == 1) and ( etat == "On") :
-  requests.get('https://domobox.maison.lan/json.htm?type=command&param=udevice&idx=33&nvalue=0&svalue=RAS',verify=False)
-  requests.get('https://domobox.maison.lan/json.htm?type=command&param=switchlight&idx=34&switchcmd=Off&level=0', verify=False)
-  print("Envoi 0")
+if (alerte == 1) and ( level != 0):
+  requests.get(domobox+'type=command&param=udevice&idx='+IDX_alerte+'&nvalue=0&svalue=RAS',verify=False)
+elif (alerte == 2) and ( level != 1):
+  requests.get(domobox+'type=command&param=udevice&idx='+IDX_alerte+'&nvalue=1&svalue=Faible',verify=False)
+elif (alerte == 3) and ( level != 3):
+  requests.get(domobox+'type=command&param=udevice&idx='+IDX_alerte+'&nvalue=3&svalue=Modéré',verify=False)
+elif (alerte == 4) and ( level != 4):
+  requests.get(domobox+'type=command&param=udevice&idx='+IDX_alerte+'&nvalue=4&svalue=Fort',verify=False)
 
-elif (alerte == 2) and ( etat == "Off") :
-  requests.get('https://domobox.maison.lan/json.htm?type=command&param=udevice&idx=33&nvalue=1&svalue=Faible',verify=False)
-  requests.get('https://domobox.maison.lan/json.htm?type=command&param=switchlight&idx=34&switchcmd=On&level=1', verify=False)
-  print("Envoi 1")
-elif (alerte == 3) and ( etat == "Off") :
-  requests.get('https://domobox.maison.lan/json.htm?type=command&param=udevice&idx=33&nvalue=3&svalue=Modéré',verify=False)
-  requests.get('https://domobox.maison.lan/json.htm?type=command&param=switchlight&idx=34&switchcmd=On&level=1', verify=False)
-  print("Envoi 3")
-elif (alerte == 4) and ( etat == "Off") :
-  requests.get('https://domobox.maison.lan/json.htm?type=command&param=udevice&idx=33&nvalue=4&svalue=Fort',verify=False)
-  requests.get('https://domobox.maison.lan/json.htm?type=command&param=switchlight&idx=34&switchcmd=On&level=1', verify=False)
-  print("Envoi 4")
 
