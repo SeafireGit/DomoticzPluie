@@ -26,9 +26,8 @@ IDX_alerte = "33"
 # Fonctions
 ##################
 
-### Récupération de l'état du switch de pluie
-
 def etatSw(id):
+  """ Récupère l'état du Dummy switch Pluie sur Domoticz """
   id = str(id)
   urlDomo = domobox+"type=devices&rid="+id
   r = requests.get(urlDomo,verify=False)
@@ -37,8 +36,8 @@ def etatSw(id):
     etat = i["Status"]
   return(etat)
 
-### Récupération de l'état d'alerte actuel
 def etatAl(id):
+  """ Récupère l'état du Dummy Alert Pluie sur Domoticz """
   id = str(id)
   urlDomo = domobox+"type=devices&rid="+id
   r = requests.get(urlDomo,verify=False)
@@ -47,11 +46,8 @@ def etatAl(id):
     etat = i["Level"]
   return(etat)
 
-
-### Récuperation des infos de MF au format JSON
-
-
 def meteoVille(insee):
+  """ Récupération des données sur le site de MF """
   url = meteofrance+insee
   r = requests.get(url)
   data = r.json()
