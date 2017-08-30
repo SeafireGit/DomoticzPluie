@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import requests,json
+import requests
+import json
 
 ###################
 # Variables
