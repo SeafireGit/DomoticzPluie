@@ -65,30 +65,22 @@ def update_alerte(alerte):
     """ Met à jour l'alerte, en prenant les niveaux et commentaires dans le dico"""
     requests.get('{0}type=command&param=udevice&idx={1}&nvalue={2}&svalue={3}'.format(domobox,IDX_alerte,dico[alerte][0],dico[alerte][1]), verify=False)
 
+def get_actual_alert():
+    alerte = 1    # On initialise l'alerte à 1 par defaut
+    print("Initial alerte ",alerte)
+    dataMF = meteoVille(ville)
+    for i in dataMF['dataCadran']:
+      print("Niveau de pluie : ",i['niveauPluie'])
+      if (i['niveauPluie'] > alerte):
+        alerte = i['niveauPluie']
+    return(alerte)
+
 #### Etat Domobox
 
 # On récupère l'état actuel de l'interrupteur (une fois pour toute plutot qu'a chaque appel de fonction)
 switch = etatSw(IDX_switch)
 level = int(etatAl(IDX_alerte))
-
-########
-# Process des données récupérées
-########
-
-# On initialise l'alerte à 1 par defaut
-alerte = int(1)
-print("Initial alerte ",alerte)
-
-dataMF = meteoVille(ville)
-
-# On va regarder dans les resultats le niveau d'alerte par tranche horaire et stocker la plus grosse alerte
-for i in dataMF['dataCadran']:
-  print("Niveau de pluie : ",i['niveauPluie'])
-  if (i['niveauPluie'] != 1) and (i['niveauPluie'] > alerte):
-    alerte = i['niveauPluie']
-
-# print("Alerte finale : ",alerte)
-
+alerte = get_actual_alert()
 
 #########
 # Envoi des alertes
