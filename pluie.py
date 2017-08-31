@@ -22,37 +22,48 @@ domobox = "https://domobox.maison.lan/json.htm?"
 IDX_switch = "34"
 IDX_alerte = "33"
 
+#### Dictionnaire des états
+# Precipitation 1 = niveau 0 et commentaire RAS
+dico = {1:(0,"RAS"),2:(1,"Faible"),3:(3,"Modéré"),4:(4,"Fort")}
+
 ##################
 # Fonctions
 ##################
 
 def etatSw(id):
-  """ Récupère l'état du Dummy switch Pluie sur Domoticz """
-  id = str(id)
-  urlDomo = domobox+"type=devices&rid="+id
-  r = requests.get(urlDomo,verify=False)
-  dataDB = r.json()
-  for i in dataDB["result"]:
-    etat = i["Status"]
-  return(etat)
+    """ Récupère l'état du Dummy switch Pluie sur Domoticz """
+    id = str(id)
+    urlDomo = domobox+"type=devices&rid="+id
+    r = requests.get(urlDomo,verify=False)
+    dataDB = r.json()
+    for i in dataDB["result"]:
+      etat = i["Status"]
+    return(etat)
 
 def etatAl(id):
-  """ Récupère l'état du Dummy Alert Pluie sur Domoticz """
-  id = str(id)
-  urlDomo = domobox+"type=devices&rid="+id
-  r = requests.get(urlDomo,verify=False)
-  dataDB = r.json()
-  for i in dataDB["result"]:
-    etat = i["Level"]
-  return(etat)
+    """ Récupère l'état du Dummy Alert Pluie sur Domoticz """
+    id = str(id)
+    urlDomo = domobox+"type=devices&rid="+id
+    r = requests.get(urlDomo,verify=False)
+    dataDB = r.json()
+    for i in dataDB["result"]:
+      etat = i["Level"]
+    return(etat)
 
 def meteoVille(insee):
-  """ Récupération des données sur le site de MF """
-  url = meteofrance+insee
-  r = requests.get(url)
-  data = r.json()
-  return (data)
+    """ Récupération des données sur le site de MF """
+    url = meteofrance+insee
+    r = requests.get(url)
+    data = r.json()
+    return (data)
 
+def update_switch(etat):
+    """ Met à jour le switch. 1=allumé 2=éteint"""
+    request.get('{0}type=command&param=switchlight&idx={1}&switchcmd=On&level={2}'.format(domobox,IDX_switch,etat),verify=False)
+
+def update_alerte(alerte):
+    """ Met à jour l'alerte, en prenant les niveaux et commentaires dans le dico"""
+    requests.get('{0}type=command&param=udevice&idx={1}&nvalue={2}&svalue={3}'.format(domobox,IDX_alerte,dico[alerte][0],dico[alerte][1]), verify=False)
 
 #### Etat Domobox
 
@@ -86,19 +97,18 @@ for i in dataMF['dataCadran']:
 ## Mise à jour du switch
 
 if (alerte > 1) and (switch == "Off"):
-  requests.get(domobox+'type=command&param=switchlight&idx='+IDX_switch+'&switchcmd=On&level=1', verify=False)
+  update_switch(1)
 elif (alerte == 1) and (switch == "On"):
-  requests.get(domobox+'type=command&param=switchlight&idx='+IDX_switch+'&switchcmd=Off&level=0', verify=False)
+  update_switch(0)
 
 ## Mise à jour de l'alerte avec le niveau exact d'alerte
 
 if (alerte == 1) and ( level != 0):
-  requests.get(domobox+'type=command&param=udevice&idx='+IDX_alerte+'&nvalue=0&svalue=RAS',verify=False)
+    update_alerte(1)
 elif (alerte == 2) and ( level != 1):
-  requests.get(domobox+'type=command&param=udevice&idx='+IDX_alerte+'&nvalue=1&svalue=Faible',verify=False)
+    update_alerte(2)
 elif (alerte == 3) and ( level != 3):
-  requests.get(domobox+'type=command&param=udevice&idx='+IDX_alerte+'&nvalue=3&svalue=Modéré',verify=False)
+    update_alerte(3)
 elif (alerte == 4) and ( level != 4):
-  requests.get(domobox+'type=command&param=udevice&idx='+IDX_alerte+'&nvalue=4&svalue=Fort',verify=False)
-
+    update_alerte(4)
 
