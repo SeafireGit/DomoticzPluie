@@ -49,7 +49,7 @@ def etatAl(id):
 def meteoVille(insee):
     """ Récupération des données sur le site de MF """
     url = meteofrance+insee
-    r = requests.get(url)
+    r = requests.get(url, timeout=3)
     data = r.json()
     return (data)
 
@@ -109,3 +109,4 @@ if __name__ == '__main__':
     elif (alerte == 4) and ( level != 4):
         update_alerte(4)
 
+quit()
